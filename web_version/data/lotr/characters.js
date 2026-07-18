@@ -14,5 +14,9 @@ export const BOSSES_DARK = [
     { name: "Gandalf", hp: 140, attack: 18, specialName: "Luz de Valinor", specialDmg: 45, specialEffect: "burn", critThreshold: 16 }
 ];
 
-export const buildGalacticPool = () => {};
-export const galacticPool = [];
+export let galacticPool = [];
+export const buildGalacticPool = () => {
+    // Importamos las bases de datos dinámicamente de su respectivo classes.js
+    // Nota: Es mejor construir el pool en hub.js, pero para no alterar la arquitectura:
+    galacticPool = [...BOSSES_LIGHT, ...BOSSES_DARK];
+};

@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('player-roster').appendChild(rosterCard);
                 draftRound++;
                 startDraftRound();
-            });
+            }, { once: true }); // CORRECCIÓN: Asegura que el evento se dispare solo 1 vez
             draftOptionsDiv.appendChild(card);
         });
         

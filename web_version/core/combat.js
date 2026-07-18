@@ -3,7 +3,7 @@ import { printLog } from '../ui/render.js';
 
 // Procesa quemaduras, enfriamientos y aturdimientos antes de atacar
 export function processStatusEffects(fighter, logContainerId) {
-    if (fighter.hp <= 0) return true; // Si está muerto, ignora (relevante en 5v5)
+    if (fighter.hp <= 0) return false; // Si ya estaba muerto, no puede actuar
     
     if (fighter.state.burn > 0) {
         fighter.hp -= 10;
@@ -13,7 +13,8 @@ export function processStatusEffects(fighter, logContainerId) {
     
     if (fighter.state.cooldown > 0) fighter.state.cooldown -= 1;
     
-    if (fighter.hp <= 0) return true; // Murió por quemadura
+    // CORRECCIÓN CRÍTICA: Retornar FALSE si muere por la quemadura
+    if (fighter.hp <= 0) return false; 
 
     if (fighter.state.stun) {
         printLog(`⚡ ${fighter.name} está aturdido y pierde el turno.`, 'log-status', logContainerId);
@@ -39,7 +40,7 @@ export function executeAttack(attacker, target, isSpecial, logContainerId, isHer
     }
     
     const finalDmg = baseDmg * dmgMult;
-    target.hp -= finalDmg;
+     target.hp = Math.max(0, target.hp - finalDmg);
     
     let msg = `🎲 [<b>${d20}</b>] ${attacker.name} usa ${attackName} a ${target.name}. <b>${txt}</b>. `;
     if (finalDmg > 0) msg += `Hace <span class="${dmgMult>1?'log-crit':''}">${finalDmg} daño</span>.`;
