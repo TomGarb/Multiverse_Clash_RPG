@@ -39,8 +39,9 @@ export function executeAttack(attacker, target, isSpecial, logContainerId, isHer
         txt = `¡CRÍTICO (x${dmgMult})!`; 
     }
     
-    const finalDmg = baseDmg * dmgMult;
-     target.hp = Math.max(0, target.hp - finalDmg);
+    const calculatedDmg = baseDmg * dmgMult;
+    const finalDmg = (dmgMult === 0) ? 0 : Math.max(1, calculatedDmg);
+    target.hp = Math.max(0, target.hp - finalDmg);
     
     let msg = `🎲 [<b>${d20}</b>] ${attacker.name} usa ${attackName} a ${target.name}. <b>${txt}</b>. `;
     if (finalDmg > 0) msg += `Hace <span class="${dmgMult>1?'log-crit':''}">${finalDmg} daño</span>.`;
