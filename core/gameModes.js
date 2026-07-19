@@ -1,6 +1,14 @@
 import { GameState } from './gameState.js';
 import { processStatusEffects, executeAttack } from './combat.js';
+import { generateLootChoices } from './loot.js';
 import { printLog, updateSquadActionPanel, renderSquads, updateUI1v1, toggleActionButtons1v1 } from '../ui/render.js';
+
+export function levelUpPlayer(player) {
+    player.maxHp = Math.floor(player.maxHp * 1.25);
+    player.hp = player.maxHp;
+    player.attack = Math.floor(player.attack * 1.25);
+    player.specialDmg = Math.floor(player.specialDmg * 1.25);
+}
 
 // --- LÓGICA MODO DRAFT (5v5) ---
 // ----------------------------------------------------
@@ -247,8 +255,10 @@ export function checkGameState1v1() {
             if (GameState.gameMode === 'roguelike') {
                 setTimeout(showLootScreen, 1500);
             } else {
-                GameState.player.hp = Math.min(GameState.player.maxHp, GameState.player.hp + 30);
-                setTimeout(() => { printLog(`Descansas y curas 30 HP. Preparando siguiente batalla...`, 'log-heal', 'combat-log'); setTimeout(() => startBattle1v1(GameState.currentBossIndex + 1), 2000); }, 1000);
+                levelUpPlayer(GameState.player);
+                sessionStorage.setItem('storyProgress', GameState.currentBossIndex + 1);
+                sessionStorage.setItem('playerConfig', JSON.stringify(GameState.player));
+                setTimeout(() => { printLog(`¡Subes de Nivel! Vida curada y Stats aumentados 25%. Preparando siguiente batalla...`, 'log-heal', 'combat-log'); setTimeout(() => startBattle1v1(GameState.currentBossIndex + 1), 2000); }, 1000);
             }
         }
         return true;
@@ -263,24 +273,15 @@ export function showLootScreen() {
     document.getElementById('loot-screen').classList.remove('hidden'); 
     document.getElementById('loot-screen').classList.add('active');
     
-    const loots = [
-        { name: "+25 HP Máximo", apply: () => { GameState.player.maxHp += 25; GameState.player.hp += 25; } },
-        { name: "+8 Daño Base", apply: () => { GameState.player.attack += 8; } },
-        { name: "-1 CritThreshold", apply: () => { GameState.player.critThreshold = Math.max(5, GameState.player.critThreshold - 1); } },
-        { name: "+15 Daño Especial", apply: () => { GameState.player.specialDmg += 15; } },
-        { name: "Curación Total", apply: () => { GameState.player.hp = GameState.player.maxHp; } }
-    ];
-    
-    const shuffled = [...loots].sort(() => 0.5 - Math.random());
-    const selectedLoots = shuffled.slice(0, 3);
+    const selectedLoots = generateLootChoices();
     const lootCardsDiv = document.getElementById('loot-cards');
     lootCardsDiv.innerHTML = '';
     selectedLoots.forEach(loot => {
         const card = document.createElement('div');
         card.className = 'class-card special-card';
-        card.innerHTML = `<h3>${loot.name}</h3>`;
+        card.innerHTML = `<h3>${loot.name}</h3><p style="font-size: 0.8rem">${loot.effect}</p>`;
         card.addEventListener('click', () => {
-            loot.apply();
+            loot.apply(GameState.player);
             document.getElementById('loot-screen').classList.add('hidden'); 
             document.getElementById('loot-screen').classList.remove('active');
             document.getElementById('battle-screen').classList.remove('hidden'); 

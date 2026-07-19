@@ -53,10 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
             GameState.currentBossDB = SagasData[saga].BOSSES_LIGHT;
         }
         
-        GameState.endlessRound = 1;
+        GameState.endlessRound = parseInt(sessionStorage.getItem('storyProgress')) || 1;
         document.getElementById('battle-screen').classList.replace('hidden', 'active');
         
-        startBattle1v1(0);
+        const progress = (gameMode === 'story' || gameMode === 'dark') ? (parseInt(sessionStorage.getItem('storyProgress')) || 0) : 0;
+        startBattle1v1(progress);
 
         // Listeners de Combate 1v1
         document.getElementById('btn-attack').addEventListener('click', () => playerTurn1v1('attack'));

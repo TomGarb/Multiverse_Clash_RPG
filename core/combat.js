@@ -37,9 +37,17 @@ export function executeAttack(attacker, target, isSpecial, logContainerId, isHer
     else if (d20 >= attacker.critThreshold) { 
         dmgMult = (attacker.passives && attacker.passives.includes("crit_multiplier_3")) ? 3 : 2; 
         txt = `¡CRÍTICO (x${dmgMult})!`; 
+    } 
+    if (attacker.passives && attacker.passives.includes("sacrifice_hp") && isSpecial) {
+        const cost = Math.floor(attacker.hp * 0.1);
+        attacker.hp = Math.max(1, attacker.hp - cost);
+        printLog(`🩸 ${attacker.name} sacrifica ${cost} HP por su ataque.`, 'log-status', logContainerId);
     }
     
-    const calculatedDmg = baseDmg * dmgMult;
+    let calculatedDmg = baseDmg * dmgMult;
+    if (target.passives && target.passives.includes("heavy_armor")) {
+        calculatedDmg = Math.floor(calculatedDmg * 0.75);
+    }
     const finalDmg = (dmgMult === 0) ? 0 : Math.max(1, calculatedDmg);
     target.hp = Math.max(0, target.hp - finalDmg);
     

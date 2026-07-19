@@ -14,9 +14,35 @@ export const BOSSES_DARK = [
     { name: "Gandalf", hp: 140, attack: 18, specialName: "Luz de Valinor", specialDmg: 45, specialEffect: "burn", critThreshold: 16 }
 ];
 
+import { DB_LIGHT, DB_DARK } from './classes.js';
+
 export let galacticPool = [];
-export const buildGalacticPool = () => {
-    // Importamos las bases de datos dinámicamente de su respectivo classes.js
-    // Nota: Es mejor construir el pool en hub.js, pero para no alterar la arquitectura:
-    galacticPool = [...BOSSES_LIGHT, ...BOSSES_DARK];
-};
+export function buildGalacticPool() {
+    galacticPool = [];
+    const extractFromDB = (db) => {
+        db.forEach(c => {
+            c.subclasses.forEach(sub => {
+                const sp = c.specials[0];
+                galacticPool.push({
+                    name: sub.name, hp: sub.hp, maxHp: sub.hp, attack: sub.attack, critThreshold: sub.critThreshold,
+                    specialName: sp.name, specialDmg: sp.dmg, specialEffect: sp.effect, specialCooldownMax: sp.cooldown,
+                    passives: sub.passives, state: { burn: 0, stun: false, cooldown: 0 }
+                });
+            });
+        });
+    };
+    extractFromDB(DB_LIGHT);
+    extractFromDB(DB_DARK);
+    
+    const extractFromBosses = (bosses) => {
+        bosses.forEach(b => {
+            galacticPool.push({
+                name: b.name, hp: b.hp, maxHp: b.hp, attack: b.attack, critThreshold: b.critThreshold,
+                specialName: b.specialName, specialDmg: b.specialDmg, specialEffect: b.specialEffect, specialCooldownMax: 2,
+                passives: [], state: { burn: 0, stun: false, cooldown: 0 }
+            });
+        });
+    }
+    extractFromBosses(BOSSES_LIGHT);
+    extractFromBosses(BOSSES_DARK);
+}
